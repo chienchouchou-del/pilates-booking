@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>預約紀錄管理</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --clr-bg: #f7f5f2;
+      --clr-card: #ffffff;
+      --clr-primary: #8b6f5e;
+      --clr-accent: #c9a87c;
+      --clr-text: #3d3429;
+      --clr-text-light: #7a706a;
+      --clr-border: #e2ddd6;
+      --clr-success: #5a9e6f;
+      --clr-error: #c45b52;
+      --radius: 14px;
+      --shadow: 0 4px 24px rgba(80, 60, 40, .08);
+    }
+    body {
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: var(--clr-bg);
+      color: var(--clr-text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .hero {
+      background: linear-gradient(135deg, #8b6f5e 0%, #c9a87c 100%);
+      color: #fff;
+      text-align: center;
+      padding: 40px 20px 36px;
+    }
+    .hero h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: 2px; }
+    .hero p  { margin-top: 6px; opacity: .88; font-size: .95rem; }
+    .container { max-width: 720px; margin: -24px auto 40px; padding: 0 16px; }
+
+    /* ── Stats Bar ── */
+    .stats {
+      display: flex; gap: 12px; margin-bottom: 20px;
+    }
+    .stat-card {
+      flex: 1;
+      background: var(--clr-card);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .stat-card .num { font-size: 1.6rem; font-weight: 700; color: var(--clr-primary); }
+    .stat-card .lbl { font-size: .8rem; color: var(--clr-text-light); margin-top: 2px; }
+
+    /* ── Filter ── */
+    .filter-bar {
+      display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .filter-bar input, .filter-bar select {
+      padding: 9px 12px;
+      border: 1.5px solid var(--clr-border);
+      border-radius: 10px;
+      font-size: .88rem;
+      font-family: inherit;
+      background: #fff;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .filter-bar input:focus, .filter-bar select:focus {
+      border-color: var(--clr-primary);
+    }
+    .filter-bar input[type="text"] { flex: 1; min-width: 140px; }
+
+    /* ── Booking List ── */
+    .booking-list { display: flex; flex-direction: column; gap: 10px; }
+    .booking-item {
+      background: var(--clr-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px 20px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      transition: transform .15s;
+    }
+    .booking-item:hover { transform: translateY(-1px); }
+    .booking-info .name {
+      font-weight: 700; font-size: 1rem;
+    }
+    .booking-info .course {
+      display: inline-block;
+      background: linear-gradient(135deg, #f5ece4, #faf5ef);
+      color: var(--clr-primary);
+      font-size: .78rem; font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 20px;
+      margin-top: 4px;
+    }
+    .booking-meta {
+      display: flex; gap: 16px; margin-top: 6px;
+      font-size: .82rem; color: var(--clr-text-light);
+    }
+    .booking-meta span { display: flex; align-items: center; gap: 4px; }
+    .booking-actions { display: flex; gap: 8px; }
+    .btn-del {
+      background: none; border: 1.5px solid var(--clr-error);
+      color: var(--clr-error);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: .8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-del:hover { background: var(--clr-error); color: #fff; }
+
+    /* ── Empty State ── */
+    .empty {
+      text-align: center; padding: 60px 20px; color: var(--clr-text-light);
+    }
+    .empty .icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty p { font-size: .95rem; }
+
+    /* ── Export ── */
+    .export-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px;
+    }
+    .btn-export {
+      padding: 8px 18px;
+      border: 2px solid var(--clr-primary);
+      border-radius: 10px;
+      background: transparent;
+      color: var(--clr-primary);
+      font-weight: 600;
+      font-size: .85rem;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-export:hover { background: var(--clr-primary); color: #fff; }
+
+    /* ── Back Link ── */
+    .back-link {
+      display: inline-block; margin-bottom: 16px;
+      font-size: .88rem; color: var(--clr-primary);
+      text-decoration: underline;
+    }
+
+    .footer {
+      text-align: center; padding: 20px;
+      font-size: .8rem; color: var(--clr-text-light);
+    }
+    @media (max-width: 480px) {
+      .stats { flex-direction: column; }
+      .booking-item { grid-template-columns: 1fr; }
+      .booking-actions { justify-content: flex-end; }
+      .filter-bar { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="hero">
+    <h1>📋 預約紀錄管理</h1>
+    <p>查看、搜尋與匯出所有學員預約</p>
+  </header>
+
+  <main class="container">
+    <a href="pilates-booking.html" class="back-link">← 回到預約頁面</a>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="num" id="totalCount">0</div>
+        <div class="lbl">總預約數</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" id="todayCount">0</div>
+        <div class="lbl">今日預約</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" id="upcomingCount">0</div>
+        <div class="lbl">未來預約</div>
+      </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-bar">
+      <input type="text" id="searchInput" placeholder="🔍 搜尋姓名 / 手機 / 課程..." />
+      <input type="date" id="filterDate" />
+      <button class="btn-export" onclick="exportCSV()">📥 匯出 CSV</button>
+    </div>
+
+    <!-- List -->
+    <div class="booking-list" id="bookingList"></div>
+  </main>
+
+  <div class="footer">© 2026 皮拉提斯工作室・預約管理</div>
+
+  <script>
+    const STORAGE_KEY = 'pilates_bookings';
+
+    function getBookings() {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    }
+    function saveBookings(arr) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+    }
+
+    function render() {
+      const bookings = getBookings();
+      const search = document.getElementById('searchInput').value.trim().toLowerCase();
+      const filterDate = document.getElementById('filterDate').value;
+      const today = new Date().toISOString().slice(0, 10);
+
+      // Stats
+      document.getElementById('totalCount').textContent = bookings.length;
+      document.getElementById('todayCount').textContent = bookings.filter(b => b.date === today).length;
+      document.getElementById('upcomingCount').textContent = bookings.filter(b => b.date > today).length;
+
+      // Filter
+      let filtered = bookings.filter(b => {
+        const matchSearch = !search ||
+          b.name.toLowerCase().includes(search) ||
+          b.phone.includes(search) ||
+          b.course.toLowerCase().includes(search);
+        const matchDate = !filterDate || b.date === filterDate;
+        return matchSearch && matchDate;
+      });
+
+      // Sort newest first
+      filtered.sort((a, b) => b.id - a.id);
+
+      const list = document.getElementById('bookingList');
+      if (filtered.length === 0) {
+        list.innerHTML = `
+          <div class="empty">
+            <div class="icon">📭</div>
+            <p>${bookings.length === 0 ? '還没有任何預約紀錄' : '找不到符合條件的預約'}</p>
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map(b => `
+        <div class="booking-item" data-id="${b.id}">
+          <div class="booking-info">
+            <div class="name">${escapeHtml(b.name)}</div>
+            <span class="course">${escapeHtml(b.course)}</span>
+            <div class="booking-meta">
+              <span>📱 ${escapeHtml(b.phone)}</span>
+              <span>📅 ${b.date}</span>
+              <span>⏰ ${b.time}</span>
+              ${b.email ? `<span>✉️ ${escapeHtml(b.email)}</span>` : ''}
+            </div>
+            ${b.note ? `<div class="booking-meta"><span>📝 ${escapeHtml(b.note)}</span></div>` : ''}
+          </div>
+          <div class="booking-actions">
+            <button class="btn-del" onclick="deleteBooking(${b.id})">刪除</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function deleteBooking(id) {
+      if (!confirm('確定要刪除這筆預約嗎？')) return;
+      const bookings = getBookings().filter(b => b.id !== id);
+      saveBookings(bookings);
+      render();
+    }
+
+    function escapeHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    function exportCSV() {
+      const bookings = getBookings();
+      if (bookings.length === 0) { alert('目前沒有預約資料可匯出'); return; }
+
+      const header = '姓名,手機,信箱,課程,日期,時段,備註,預約時間';
+      const rows = bookings.map(b =>
+        [b.name, b.phone, b.email, b.course, b.date, b.time, b.note, b.createdAt]
+          .map(v => '"' + (v || '').replace(/"/g, '""') + '"')
+          .join(',')
+      );
+      const csv = '\uFEFF' + header + '\n' + rows.join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `預約紀錄_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Listeners
+    document.getElementById('searchInput').addEventListener('input', render);
+    document.getElementById('filterDate').addEventListener('change', render);
+
+    render();
+  </script>
+</body>
+</html>

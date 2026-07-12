@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>皮拉提斯 學員自助預約</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --clr-bg: #f7f5f2;
+      --clr-card: #ffffff;
+      --clr-primary: #8b6f5e;
+      --clr-primary-hover: #73584a;
+      --clr-accent: #c9a87c;
+      --clr-text: #3d3429;
+      --clr-text-light: #7a706a;
+      --clr-border: #e2ddd6;
+      --clr-success: #5a9e6f;
+      --clr-error: #c45b52;
+      --radius: 14px;
+      --shadow: 0 4px 24px rgba(80, 60, 40, .08);
+    }
+    body {
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: var(--clr-bg);
+      color: var(--clr-text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .hero {
+      background: linear-gradient(135deg, #8b6f5e 0%, #c9a87c 100%);
+      color: #fff;
+      text-align: center;
+      padding: 48px 20px 40px;
+    }
+    .hero h1 { font-size: 2rem; font-weight: 700; letter-spacing: 2px; }
+    .hero p  { margin-top: 8px; opacity: .88; font-size: 1rem; }
+    .container { max-width: 640px; margin: -28px auto 40px; padding: 0 16px; }
+    .card {
+      background: var(--clr-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 32px 28px;
+    }
+    .section-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 1.05rem; font-weight: 600; color: var(--clr-primary);
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--clr-border);
+      padding-bottom: 10px;
+    }
+    .section-title .icon { font-size: 1.2rem; }
+    .form-section { margin-bottom: 28px; }
+    .form-section:last-of-type { margin-bottom: 8px; }
+    label {
+      display: block; font-size: .9rem; font-weight: 500;
+      margin-bottom: 6px; color: var(--clr-text);
+    }
+    label .req { color: var(--clr-error); margin-left: 2px; }
+    input[type="text"],
+    input[type="tel"],
+    input[type="email"],
+    input[type="date"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--clr-border);
+      border-radius: 10px;
+      font-size: .95rem;
+      font-family: inherit;
+      color: var(--clr-text);
+      background: #fafaf8;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--clr-primary);
+      box-shadow: 0 0 0 3px rgba(139,111,94,.12);
+    }
+    textarea { resize: vertical; min-height: 70px; }
+    .field-group { margin-bottom: 14px; }
+    .row { display: flex; gap: 14px; }
+    .row > .field-group { flex: 1; }
+
+    /* ── Course Cards (2 columns) ── */
+    .class-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .class-card {
+      position: relative;
+      border: 2px solid var(--clr-border);
+      border-radius: 14px;
+      padding: 24px 16px;
+      cursor: pointer;
+      transition: all .2s;
+      text-align: center;
+      background: #fdfcfa;
+    }
+    .class-card:hover { border-color: var(--clr-accent); background: #fdf9f4; }
+    .class-card.selected {
+      border-color: var(--clr-primary);
+      background: linear-gradient(135deg, #f5ece4, #faf5ef);
+      box-shadow: 0 0 0 3px rgba(139,111,94,.15);
+    }
+    .class-card input { position: absolute; opacity: 0; pointer-events: none; }
+    .class-card .emoji { font-size: 2rem; display: block; margin-bottom: 8px; }
+    .class-card .name  { font-weight: 600; font-size: 1rem; display: block; }
+    .class-card .desc  { font-size: .82rem; color: var(--clr-text-light); margin-top: 4px; display: block; }
+
+    /* ── Time Slots ── */
+    .time-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .time-slot {
+      position: relative;
+      text-align: center;
+      padding: 8px 4px;
+      border: 1.5px solid var(--clr-border);
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: .88rem;
+      font-weight: 500;
+      transition: all .2s;
+      background: #fdfcfa;
+    }
+    .time-slot:hover { border-color: var(--clr-accent); }
+    .time-slot.selected {
+      border-color: var(--clr-primary);
+      background: linear-gradient(135deg, #f5ece4, #faf5ef);
+      box-shadow: 0 0 0 3px rgba(139,111,94,.12);
+    }
+    .time-slot input { position: absolute; opacity: 0; pointer-events: none; }
+    .time-slot .spots { font-size: .72rem; color: var(--clr-text-light); display: block; margin-top: 2px; }
+    .time-slot.full { opacity: .45; cursor: not-allowed; pointer-events: none; border-style: dashed; }
+    .time-slot.full .spots { color: var(--clr-error); }
+
+    /* ── Button ── */
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #8b6f5e 0%, #a88a73 100%);
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: transform .15s, box-shadow .2s;
+      margin-top: 8px;
+    }
+    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(139,111,94,.25); }
+    .btn-submit:active { transform: translateY(0); }
+
+    .error-msg {
+      font-size: .8rem; color: var(--clr-error);
+      margin-top: 4px; display: none;
+    }
+    .field-group.has-error input,
+    .field-group.has-error select,
+    .field-group.has-error textarea {
+      border-color: var(--clr-error);
+    }
+    .field-group.has-error .error-msg { display: block; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      display: none; justify-content: center; align-items: center;
+      z-index: 1000;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: var(--clr-card);
+      border-radius: var(--radius);
+      padding: 36px 32px;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 12px 48px rgba(0,0,0,.18);
+      animation: popIn .25s ease-out;
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(.92); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .modal .check { font-size: 3rem; margin-bottom: 12px; }
+    .modal h2 { font-size: 1.25rem; margin-bottom: 8px; color: var(--clr-success); }
+    .modal p  { font-size: .92rem; color: var(--clr-text-light); margin-bottom: 20px; line-height: 1.7; }
+    .modal .detail-box {
+      text-align: left; background: #f7f5f2;
+      border-radius: 10px; padding: 16px;
+      font-size: .88rem; line-height: 1.8;
+      margin-bottom: 20px;
+    }
+    .modal .detail-box strong { color: var(--clr-primary); }
+    .modal .btn-close {
+      padding: 10px 32px;
+      border: 2px solid var(--clr-primary);
+      border-radius: 10px;
+      background: transparent;
+      color: var(--clr-primary);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .modal .btn-close:hover { background: var(--clr-primary); color: #fff; }
+    .footer {
+      text-align: center; padding: 20px;
+      font-size: .8rem; color: var(--clr-text-light);
+    }
+    @media (max-width: 480px) {
+      .row { flex-direction: column; gap: 0; }
+      .time-grid { grid-template-columns: repeat(4, 1fr); }
+      .card { padding: 24px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="hero">
+    <h1>🧘 皮拉提斯 預約系統</h1>
+    <p>選擇適合你的課程，輕鬆完成預約</p>
+  </header>
+
+  <main class="container">
+    <form id="bookingForm" class="card" novalidate>
+
+      <!-- ─── 學員資訊 ─── -->
+      <div class="form-section">
+        <div class="section-title"><span class="icon">👤</span> 學員資訊</div>
+        <div class="row">
+          <div class="field-group" data-validate="required">
+            <label>姓名 <span class="req">*</span></label>
+            <input type="text" name="name" placeholder="例：王小美" />
+            <div class="error-msg">請填寫姓名</div>
+          </div>
+          <div class="field-group" data-validate="required">
+            <label>手機號碼 <span class="req">*</span></label>
+            <input type="tel" name="phone" placeholder="0912-345-678" />
+            <div class="error-msg">請填寫手機號碼</div>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>電子信箱</label>
+          <input type="email" name="email" placeholder="example@email.com" />
+        </div>
+      </div>
+
+      <!-- ─── 選擇課程 ─── -->
+      <div class="form-section">
+        <div class="section-title"><span class="icon">🎯</span> 選擇課程</div>
+        <div class="class-grid">
+          <label class="class-card" data-value="private-1">
+            <input type="radio" name="course" value="private-1" />
+            <span class="emoji">👑</span>
+            <span class="name">私人一對一</span>
+            <span class="desc">客製化指導 · 55 分鐘</span>
+          </label>
+          <label class="class-card" data-value="private-2">
+            <input type="radio" name="course" value="private-2" />
+            <span class="emoji">👯</span>
+            <span class="name">一對二</span>
+            <span class="desc">雙人共享課程 · 55 分鐘</span>
+          </label>
+        </div>
+        <div class="error-msg" id="courseError" style="margin-top:8px;">請選擇一門課程</div>
+      </div>
+
+      <!-- ─── 選擇日期 ─── -->
+      <div class="form-section">
+        <div class="section-title"><span class="icon">📅</span> 選擇日期</div>
+        <div class="field-group" data-validate="required">
+          <input type="date" name="date" id="dateInput" />
+          <div class="errorMsg" style="font-size:.8rem;color:var(--clr-error);margin-top:4px;display:none;">請選擇日期</div>
+        </div>
+      </div>
+
+      <!-- ─── 選擇時段 ─── -->
+      <div class="form-section">
+        <div class="section-title"><span class="icon">⏰</span> 選擇時段</div>
+        <div class="time-grid" id="timeSlots"></div>
+        <div class="error-msg" id="timeError" style="margin-top:8px;">請選擇時段</div>
+      </div>
+
+
+      <!-- ─── 備註 ─── -->
+      <div class="form-section">
+        <div class="section-title"><span class="icon">📝</span> 備註</div>
+        <div class="field-group">
+          <textarea name="note" placeholder="身體狀況、特殊需求、器材經驗等（選填）" rows="3"></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit">確認預約 ✨</button>
+    </form>
+  </main>
+
+  <div class="footer">© 2026 皮拉提斯工作室・預約系統</div>
+
+  <!-- ─── Confirmation Modal ─── -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+      <div class="check">✅</div>
+      <h2>預約成功！</h2>
+      <p>以下是你的預約資訊，請準時到場喔 💕</p>
+      <div class="detail-box" id="modalDetails"></div>
+      <button class="btn-close" onclick="closeModal()">關閉</button>
+    </div>
+  </div>
+
+  <script>
+    const courseNames = {
+      'private-1': '私人一對一',
+      'private-2': '一對二'
+    };
+
+    // Date min: today
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm   = String(today.getMonth() + 1).padStart(2, '0');
+    const dd   = String(today.getDate()).padStart(2, '0');
+    document.getElementById('dateInput').min = `${yyyy}-${mm}-${dd}`;
+
+    // Generate time slots 10:00 - 20:00
+    const MAX_PER_SLOT = 2;
+    function getSlotCount(date, time) {
+      const bookings = JSON.parse(localStorage.getItem('pilates_bookings') || '[]');
+      return bookings.filter(b => b.date === date && b.time === time).length;
+    }
+    function refreshSlots() {
+      const date = document.getElementById('dateInput').value;
+      document.querySelectorAll('.time-slot').forEach(slot => {
+        const t = slot.dataset.value;
+        const count = date ? getSlotCount(date, t) : 0;
+        const spotsEl = slot.querySelector('.spots');
+        if (count >= MAX_PER_SLOT) {
+          slot.classList.add('full');
+          spotsEl.textContent = '已額滿';
+        } else {
+          slot.classList.remove('full');
+          spotsEl.textContent = '剩 ' + (MAX_PER_SLOT - count) + ' 位';
+        }
+      });
+    }
+    (function() {
+      const container = document.getElementById('timeSlots');
+      for (let h = 10; h <= 20; h++) {
+        for (let m = 0; m < 60; m += 30) {
+          if (h === 20 && m > 0) break;
+          const t = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+          const label = document.createElement('label');
+          label.className = 'time-slot';
+          label.dataset.value = t;
+          label.innerHTML = '<input type="radio" name="time" value="' + t + '" /> ' + t + '<span class="spots">可預約</span>';
+          container.appendChild(label);
+        }
+      }
+    })();
+    document.getElementById('dateInput').addEventListener('change', refreshSlots);
+    refreshSlots();
+
+    // Card / slot toggles
+    document.querySelectorAll('.class-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.class-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        card.querySelector('input').checked = true;
+      });
+    });
+    document.querySelectorAll('.time-slot').forEach(slot => {
+      slot.addEventListener('click', () => {
+        document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+        slot.classList.add('selected');
+        slot.querySelector('input').checked = true;
+      });
+    });
+
+    // Validation + Submit
+    document.getElementById('bookingForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      let valid = true;
+
+      this.querySelectorAll('.field-group[data-validate="required"]').forEach(group => {
+        const input = group.querySelector('input, select, textarea');
+        const msg   = group.querySelector('.errorMsg') || group.querySelector('.error-msg');
+        if (!input.value.trim()) {
+          group.classList.add('has-error');
+          if (msg) msg.style.display = 'block';
+          valid = false;
+        } else {
+          group.classList.remove('has-error');
+          if (msg) msg.style.display = 'none';
+        }
+      });
+
+      const courseRadio = this.querySelector('input[name="course"]:checked');
+      const courseErr   = document.getElementById('courseError');
+      if (!courseRadio) { courseErr.style.display = 'block'; valid = false; }
+      else              { courseErr.style.display = 'none'; }
+
+      const timeRadio = this.querySelector('input[name="time"]:checked');
+      const timeErr   = document.getElementById('timeError');
+      if (!timeRadio) { timeErr.style.display = 'block'; valid = false; }
+      else            { timeErr.style.display = 'none'; }
+
+      if (!valid) return;
+
+      const fd = new FormData(this);
+      const details = `
+        <strong>姓名：</strong>${fd.get('name')}<br/>
+        <strong>手機：</strong>${fd.get('phone')}<br/>
+        ${fd.get('email') ? '<strong>信箱：</strong>' + fd.get('email') + '<br/>' : ''}
+        <strong>課程：</strong>${courseNames[fd.get('course')] || fd.get('course')}<br/>
+        <strong>日期：</strong>${fd.get('date')}<br/>
+        <strong>時段：</strong>${fd.get('time')}<br/>
+        ${fd.get('note') ? '<strong>備註：</strong>' + fd.get('note') : ''}
+      `;
+      document.getElementById('modalDetails').innerHTML = details;
+      // Save to localStorage
+      const booking = {
+        id: Date.now(),
+        name: fd.get("name"),
+        phone: fd.get("phone"),
+        email: fd.get("email") || "",
+        course: courseNames[fd.get("course")] || fd.get("course"),
+        date: fd.get("date"),
+        time: fd.get("time"),
+        note: fd.get("note") || "",
+        createdAt: new Date().toISOString()
+      };
+      const bookings = JSON.parse(localStorage.getItem("pilates_bookings") || "[]");
+      if (getSlotCount(booking.date, booking.time) >= MAX_PER_SLOT) {
+        alert('此時段已額滿，請選擇其他時段');
+        refreshSlots();
+        return;
+      }
+      bookings.push(booking);
+      localStorage.setItem("pilates_bookings", JSON.stringify(bookings));
+      refreshSlots();
+      document.getElementById('confirmModal').classList.add('show');
+    });
+
+    function closeModal() {
+      document.getElementById('confirmModal').classList.remove('show');
+    }
+    document.getElementById('confirmModal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+  </script>
+</body>
+</html>
