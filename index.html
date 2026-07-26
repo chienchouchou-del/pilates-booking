@@ -59,7 +59,6 @@
     label .req { color: var(--clr-error); margin-left: 2px; }
     input[type="text"],
     input[type="tel"],
-    input[type="email"],
     input[type="date"],
     select,
     textarea {
@@ -239,10 +238,6 @@
             <div class="error-msg">請填寫手機號碼</div>
           </div>
         </div>
-        <div class="field-group">
-          <label>電子信箱</label>
-          <input type="email" name="email" placeholder="example@email.com" />
-        </div>
       </div>
 
       <!-- ─── 選擇課程 ─── -->
@@ -415,7 +410,6 @@
       const details = `
         <strong>姓名：</strong>${fd.get('name')}<br/>
         <strong>手機：</strong>${fd.get('phone')}<br/>
-        ${fd.get('email') ? '<strong>信箱：</strong>' + fd.get('email') + '<br/>' : ''}
         <strong>課程：</strong>${courseNames[fd.get('course')] || fd.get('course')}<br/>
         <strong>日期：</strong>${fd.get('date')}<br/>
         <strong>時段：</strong>${fd.get('time')}<br/>
@@ -427,7 +421,6 @@
         id: Date.now(),
         name: fd.get("name"),
         phone: fd.get("phone"),
-        email: fd.get("email") || "",
         course: courseNames[fd.get("course")] || fd.get("course"),
         date: fd.get("date"),
         time: fd.get("time"),

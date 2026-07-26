@@ -250,7 +250,6 @@
               <span>📱 ${escapeHtml(b.phone)}</span>
               <span>📅 ${b.date}</span>
               <span>⏰ ${b.time}</span>
-              ${b.email ? `<span>✉️ ${escapeHtml(b.email)}</span>` : ''}
             </div>
             ${b.note ? `<div class="booking-meta"><span>📝 ${escapeHtml(b.note)}</span></div>` : ''}
           </div>
@@ -278,9 +277,8 @@
       const bookings = getBookings();
       if (bookings.length === 0) { alert('目前沒有預約資料可匯出'); return; }
 
-      const header = '姓名,手機,信箱,課程,日期,時段,備註,預約時間';
+      const header = '姓名,手機,課程,日期,時段,備註,預約時間';
       const rows = bookings.map(b =>
-        [b.name, b.phone, b.email, b.course, b.date, b.time, b.note, b.createdAt]
           .map(v => '"' + (v || '').replace(/"/g, '""') + '"')
           .join(',')
       );
